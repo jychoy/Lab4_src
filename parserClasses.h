@@ -39,22 +39,17 @@ namespace ensc251 {
         	return outs;
 		}
 
-		// can add virtual Token* functions to Token Class?
 		virtual Token* process_punctuator(const std::string &puncValue) { return nullptr; }
 		virtual Token* process_unary() { return nullptr; }
 		virtual Token* process_primary_exp() { return nullptr; }
     	virtual Token* advance_past_shift_operator() { return nullptr; }
     	virtual Token* advance_past_assignment_operator() { return nullptr; }
-    	virtual Token* advance_past_additive() {return nullptr;} // added
+
     	virtual Token* process_id() { return nullptr; }
-    	virtual Token* process_declaration() { return nullptr; } // added
-    	//virtual Token* is_type_spec() {return false; } // added
 
     	Token* process_token()
     	{
-			tracker++; /* - increments tracker whenever it is called
-						  - starts from 0 when it first finds '{' */
-
+			tracker++;
 			// should we check to see if we are at '}'
     		if (tracker < tokenObjectPs.size()){
     			return this;
@@ -82,44 +77,32 @@ namespace ensc251 {
         Token* ternary_exp();
         Token* unary_exp();
         Token* shift_exp();
-        Token* additive_exp(); // missing //***implement this function
-        Token* div_exp(); // missing //***implement this function
+        Token* additive_exp(); // missing
+        Token* div_exp(); // missing
         Token* unary_exp();
         Token* postfix_exp();
-        Token* declaration(); // added
-        Token* declarator(); // added
-        Token* id(); // added
 
-        Token* recursive_parser() //called recursively to find all the '{' in the input code
+        Token* recursive_parser()
         {
-        	if (tokenObjectPs.size()) //if tokenObjectPs vector has at least 1 element then enter if condition statement
-        		return tokenObjectPs[tracker]->process_punctuator("{"); //equiv to tokenObjectPs[0]->process_puncuator("{");
-        	else //if tokenObjectPs vector has no element, return nullptr
+        	if (tokenObjectPs.size())
+        		return tokenObjectPs[tracker]->process_punctuator("{");
+        	else
         		return nullptr;
         }
 
-        std::vector<Token*> decl_list() /* TA Mohammed mentioned to start at declaration list first then code the rest */
+        std::vector<Token*> decl_list()
         {
         	std::vector<Token*> all_declarations;
-        	/* - decl_list is one or more declaration and declarations start with declarator which starts with a type_spec
-        	 * - code for decl_list is similar to stat_list() code according to prof */
+
 			// ***** Complete this function and add code elsewhere as needed *****
 
-        	while(auto subTree = declaration()) { /* - need to create declaration() function
-        	 	 	 	 	 	 	 	 	 	 	 - it will be similar to stat() function*/
-        		all_declarations.push_back(subTree);
-        	}
         	return all_declarations;
         }
 
-        std::vector<Token*> stat_list() //***what is stat_list?
+        std::vector<Token*> stat_list()
         {
         	std::vector<Token*> all_stats;
-        	while(auto subTree = stat()) { /* - while there are still stat() token that can be assigned to the pointer subTree
-        										push_back value of subTree into vector pointer all_stats
-        									  - if tracker count is less than the number of elements in tokenObjectPs AND
-        									    tokenObjectPs has not reached the element that is equal to '}' return the
-        									    vector pointer all_stats*/
+        	while(auto subTree = stat()) {
         		all_stats.push_back(subTree);
         		if(tracker < tokenObjectPs.size() && tokenObjectPs[tracker]->get_string_value() == "}")
         			return all_stats;
@@ -127,67 +110,19 @@ namespace ensc251 {
         	return {};
         }
 
-        Token* declaration()
-        {
-        	// prof mentioned that you want to find type spec in this function rather than stat() finding exp_stat()
-        	// if it is a type_spec, do stuff, if not then return nullptr
-        	if (Token* subTree = declarator())
-        	{
-        		return subTree;
-        	}
-
-        	if (Token* subTree = id())
-        	{
-        		return subTree;
-        	}
-
-        	if (tokenObjectPs[tracker]->get_string_value() == (";"))
-        	{
-
-        	}
-        	return nullptr;
-        }
-
-        Token* declarator()
-        {
-        	int new_tracker = tracker+1;
-        	Token* subTree = tokenObjectPs[tracker+1]->process_primary_exp();
-        	// check if type_spec* (eg. char*) OR just type_spec (eg. char) OR type_spec identifier
-        	if (subTree)
-        	{
-        		//if (tokenObjectPs[new_tracker]->get_string_value() == id())// check if identifier
-
-        		// check if *
-        	}
-        }
-
-        Token* id()
-        {
-        	return tokenObjectsPs[tracker]->process_primary_exp();
-        }
-        Token* stat() /* - stat() contains exp_stat and compound_stat
-        				 - exp_stat contains ';' */
+        Token* stat()
         {
         	//int old_tracker = tracker;
-        	if(Token* subTree = exp_stat()) /* - if subTree pointer is assigned/points to an exp_stat() token (exp which contains
-        									     assignment_exp or ',') then:
-        									   	   a) return subTree?
-        									   	   b) do stuff then return subTree?
-        									   	   c) return subTree then do stuff?
-        									   - I am not sure what functionality I need to implement either before or after return subTree?
-        									   */
+        	if(Token* subTree = exp_stat())
         		return subTree;
 			// ***** Complete this function
-        	// implement compound statement as the "complete this function"
-        	// prof said to look at BNF to see whats missing and that happened to be compound statement
-        	else
-        		return nullptr;
+
+        	return nullptr;
         }
 
         Token* exp_stat() // expression statement
         {
-        	if(Token* subTree = exp()) /* if the pointer subTree points to a expression statement
-        	 	 	 	 	 	 	 	  then if current element of tokenObjectPs is a ';' return subTree pointer*/
+        	if(Token* subTree = exp())
         	{
         		if (tokenObjectPs[tracker]->process_punctuator(";"))
         			return subTree;
@@ -197,12 +132,10 @@ namespace ensc251 {
 
         Token* exp() // expression
         {
-        	if(Token* subTree = assignment_exp()) // if subTree points to a assignment_expression enter inner statement
-
+        	if(Token* subTree = assignment_exp())
         	{
     			// ***** Complete this function
-				if (tokenObjectPs[tracker]->advance_past_assignment_operator()) // if current element of tokenObjectPs is "=" increment tracker to advance past it?
-					return subTree;
+				return subTree;
 				// ***** Complete this function
         	}
 			return nullptr;
@@ -216,16 +149,13 @@ namespace ensc251 {
         	Token* subTree = unary_exp();
         	if(subTree)
         	{
-        		if(Token* tObj = tokenObjectPs[tracker]->advance_past_assignment_operator()) //advance_past_assignment operator is find the '=' and move past it (ie. tracker++)
+        		if(Token* tObj = tokenObjectPs[tracker]->advance_past_assignment_operator())
         		{ // the pattern here
-        			tObj->add_childP(subTree); // added errno as child to assignment operator (=)
-        			subTree = assignment_exp(); // makes assignment operator as root of subTree
-        										/* assignment_exp() is a recursive call to another function
-        										   look for unary_exp in assignment_exp() call
-        										   - this calls process_unary virtual function*/
+        			tObj->add_childP(subTree);
+        			subTree = assignment_exp();
         			if(subTree)
         			{
-        				tObj->add_childP(subTree); // add the 'right side' subTree which is '5'
+        				tObj->add_childP(subTree);
         				return tObj;
         			}
         			else
@@ -296,20 +226,6 @@ namespace ensc251 {
         	return aeTreeP;
         }
 
-        Token* additive_exp()
-        {
-        	int old_tracker = tracker;
-
-        	Token* tObjP;
-
-        	if(!(tObjP = tokenObjectPs[tracker]->advance_past_additive()))
-        	{
-        		tracker = old_tracker;
-        		tObjP = postfix_exp();
-        	}
-        	return tObjP;
-        }
-
         Token* unary_exp()
         {
         	int old_tracker = tracker;
@@ -326,11 +242,7 @@ namespace ensc251 {
 
         Token* postfix_exp()
         {
-        	auto subTree = tokenObjectPs[tracker]->process_primary_exp(); // take current element and point it to process_primary_exp()
-        																  /* the constant '5' is a primary_exp() so look at Class Const enter process_primary_exp() which enters
-        																   * process_token() which then increments tracker
-        																   * if tracker is not at end of tokenObjectPs return this (which is int_const 5)
-        																   */
+        	auto subTree = tokenObjectPs[tracker]->process_primary_exp();
 			// ***** Complete this function
         	return subTree;
         }
@@ -395,32 +307,30 @@ namespace ensc251 {
         		return nullptr;
         	}
 
-        	Token* process_punctuator(const std::string &puncValue) /* member function of Token class that takes in argument and
-        															   check if argument is a punctuator */
+        	Token* process_punctuator(const std::string &puncValue)
         	{
 				if (puncValue == stringValue)
 					switch (puncValue[0])
 					{
-					case '{': /* in the event that the current punctuator value is '{' call process_token to increment tracker */
+					case '{':
 					{
 							process_token();
-							std::vector<Token*> second_level = decl_list(); // second level of tree node which are the children of the first level decl_list
+							std::vector<Token*> second_level = decl_list();
 
-							std::vector<Token*> statements = stat_list(); // assign stat_list to vector pointer statements
+							std::vector<Token*> statements = stat_list();
 							if(statements.empty())
 								return nullptr; // it means there is an error in the block.
 
-							second_level.insert(second_level.end(),statements.begin(),statements.end()); // insert (statements = stat_list()) into second_level
+							second_level.insert(second_level.end(),statements.begin(),statements.end());
 
 							if(tracker < tokenObjectPs.size() && tokenObjectPs[tracker]->get_string_value() == "}")
 							{
 								tracker++;
 								//tObj->add_children(second_level);
-								for (auto newChild : second_level) { /* have newChild be assigned the values of second_level then use add_child function to
-																		place newChild into childPVector */
+								for (auto newChild : second_level) {
 									add_childP(newChild);
 								}
-								return this; // return the values of this whole if condition statement
+								return this;
 							}
 							break;
 					}
@@ -452,15 +362,6 @@ namespace ensc251 {
 			// 'char' | 'int' | 'float'
         public:
         	type_spec(const std::string &typeValue): StringBasedToken(typeValue){ };
-        	//bool is_type_spec() { return true; }
-        	Token* process_id()
-        	{
-        		return process_token();
-        	}
-        	Token* process_primary_exp()
-        	{
-        		return process_id(); // return process_token();
-        	}
 		};
 
         class assignment_operator:public StringBasedToken
@@ -468,7 +369,7 @@ namespace ensc251 {
 			// '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '^=' | '|='
         public:
         	assignment_operator(const std::string &opValue): StringBasedToken(opValue){ };
-        	Token* advance_past_assignment_operator() { // member function call to return process_token() function for assignment operators
+        	Token* advance_past_assignment_operator() {
         		return process_token();
         	}
 		};
@@ -496,18 +397,6 @@ namespace ensc251 {
         public:
         	additive_operator(const std::string &opValue): StringBasedToken(opValue){ };
 			// ***** Complete this class if needed
-
-        	//implemented, could be wrong idk
-        	Token* process_additive()
-        	{
-        		Token* subTree;
-        		if(process_token() && (subTree = additive_exp()))
-        		{
-        			add_childP(subTree);
-        			return this;
-        		}
-        		return nullptr;
-        	}
 		};
 
         class div_operator:public StringBasedToken
@@ -516,18 +405,6 @@ namespace ensc251 {
         public:
         	div_operator(const std::string &opValue): StringBasedToken(opValue){ };
 			// ***** Complete this class if needed
-
-        	//implemented, could be wrong idk
-        	Token* process_division()
-        	{
-        		Token* subTree;
-        		if(process_token() && (subTree = div_exp()))
-        		{
-        			add_childP(subTree);
-        			return this;
-        		}
-        		return nullptr;
-        	}
 		};
 
         class unary_operator:public StringBasedToken
@@ -536,13 +413,9 @@ namespace ensc251 {
         public:
         	unary_operator(const std::string &opValue): StringBasedToken(opValue){ };
 
-        	Token* process_unary() /* - create pointer function of Token class, process_unary(), that will then create a subTree pointer
-        							    to point to the unary expression and add it to childPVector (if process_token works and its a unary
-        							    expression) */
+        	Token* process_unary()
         	{
-        		Token* subTree; /* - create pointer of Token class
-        						   - if process_token() returns a value AND if subTree points to a unary_exp() then call add_childP function
-        						     with the value of subTree to be added to childPVector */
+        		Token* subTree;
 				if(process_token() && (subTree = unary_exp()))
 				{
 					add_childP(subTree);
